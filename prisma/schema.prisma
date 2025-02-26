@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ✅ Role Enum
+enum Role {
+  DOCTOR
+  PATIENT
+  ADMIN
+}
+
+// ✅ User & Access Control
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  password   String
+  name       String
+  role       Role     @default(PATIENT)  // Default role is Patient
+  attributes Json?    // ABAC attributes
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Doctor     Doctor?
+  Patient    Patient?
+}
+
+// ✅ Doctor & Patient Management
+model Doctor {
+  id          String        @id @default(uuid())
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String        @unique
+  specialty   String
+  schedule    Json?
+  appointments Appointment[]
+}
+
+model Patient {
+  id              String         @id @default(uuid())
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String         @unique
+  medicalHistory  Json?
+  appointments    Appointment[]
+  notifications   Notification[]
+}
+
+// ✅ Appointments
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELED
+}
+
+model Appointment {
+  id        String            @id @default(uuid())
+  doctor    Doctor            @relation(fields: [doctorId], references: [id])
+  doctorId  String
+  patient   Patient           @relation(fields: [patientId], references: [id])
+  patientId String
+  dateTime  DateTime
+  status    AppointmentStatus @default(SCHEDULED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ✅ Notifications (WhatsApp, Email, etc.)
+model Notification {
+  id        String   @id @default(uuid())
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  patientId String
+  type      String   // "email", "sms", "whatsapp"
+  message   String
+  sentAt    DateTime @default(now())
+}
+
+// ✅ Logging System
+model AccessLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  endpoint  String
+  method    String
+  status    Int
+  timestamp DateTime @default(now())
+}
+
+model ErrorLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  message    String
+  stackTrace String?
+  timestamp  DateTime @default(now())
+}
