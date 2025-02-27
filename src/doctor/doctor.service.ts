@@ -8,7 +8,6 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 export class DoctorService {
   constructor(
     private prisma: PrismaService,
-    private jwt: JwtService,
   ) {}
   async create(dto: CreateDoctorDto) {
     const { userId, specialty } = dto;

@@ -5,6 +5,9 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { Request } from 'express';
 
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
 @Injectable()
 export class RoleGuard implements CanActivate {
   constructor(
@@ -20,9 +23,8 @@ export class RoleGuard implements CanActivate {
       return true; // No role restriction
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const authHeader = request.headers.authorization;
-    console.log(authHeader);
     if (!authHeader) {
       throw new ForbiddenException('Access Denied: No Token Provided');
     }
@@ -43,8 +45,12 @@ export class RoleGuard implements CanActivate {
       if (!user) {
         throw new ForbiddenException('User not found');
       }
-
-     
+      const data={
+        id:decodedToken.id,
+        email:decodedToken.email,
+        role:user.role
+      }
+      request.user = data;
       return requiredRoles.includes(user.role);
     } catch (error) {
       console.error(error);

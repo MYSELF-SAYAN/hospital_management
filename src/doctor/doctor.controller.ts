@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -18,25 +27,31 @@ export class DoctorController {
   }
 
   @Get('all')
-  @Roles('ADMIN', 'DOCTOR') 
+  @Roles('ADMIN', 'DOCTOR')
   @UseGuards(JwtAuthGuard, RoleGuard)
   async getAll() {
     return this.doctorService.getAll();
   }
+
   @Get(':id')
-  @Roles('ADMIN', 'DOCTOR', 'PATIENT') // All roles can access this
+  @Roles('ADMIN', 'DOCTOR', 'PATIENT')
   @UseGuards(RoleGuard)
   getDoctorDetails(@Param('id') id: string) {
     return this.doctorService.getDoctorById(id);
   }
+
   @Put(':id')
-  @Roles('DOCTOR', 'ADMIN') // Only DOCTOR and ADMIN can update
+  @Roles('DOCTOR', 'ADMIN')
   @UseGuards(RoleGuard)
-  updateDoctorProfile(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
+  updateDoctorProfile(
+    @Param('id') id: string,
+    @Body() updateDoctorDto: UpdateDoctorDto,
+  ) {
     return this.doctorService.updateDoctor(id, updateDoctorDto);
   }
+
   @Delete(':id')
-  @Roles('ADMIN') // Only ADMIN can delete
+  @Roles('ADMIN')
   @UseGuards(RoleGuard)
   deleteDoctorProfile(@Param('id') id: string) {
     return this.doctorService.deleteDoctor(id);
